@@ -4,6 +4,7 @@ const handlebars = require("express-handlebars");
 const bodyParser = require("body-parser");
 const app = express();
 const admin = require("./routes/admin");
+const usuarios = require("./routes/usuario");
 const path = require("path");
 const mongoose = require("mongoose");
 const session = require("express-session");
@@ -12,6 +13,8 @@ require("./models/Postagem");
 const Postagem = mongoose.model("postagens");
 require("./models/Categoria");
 const Categoria = mongoose.model("categorias");
+const passport = require("passport");
+require("./config/auth")(passport);
 
 // Configurações
 //Sessão
@@ -25,11 +28,15 @@ app.use(
     saveUninitialized: true,
   })
 );
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use(flash());
 // Middleware
 app.use((req, res, next) => {
   res.locals.success_msg = req.flash("success_msg")[0];
   res.locals.error_msg = req.flash("error_msg")[0];
+  res.locals.error = req.flash("error");
   next();
 });
 //Body Parser
@@ -159,6 +166,7 @@ app.get("/categorias/:slug", (req, res) => {
 });
 
 app.use("/admin", admin); // Definindo um prefixo para o grupo de rotas do arquivo admin.js
+app.use("/usuarios", usuarios); // Definindo um prefixo para o grupo de rotas do arquivo admin.js
 
 // Outros
 const PORT = 8081;
