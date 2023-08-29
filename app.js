@@ -8,6 +8,10 @@ const path = require("path");
 const mongoose = require("mongoose");
 const session = require("express-session");
 const flash = require("connect-flash");
+require("./models/Postagem");
+const Postagem = mongoose.model("postagens");
+require("./models/Categoria");
+const Categoria = mongoose.model("categorias");
 
 // Configurações
 //Sessão
@@ -51,6 +55,109 @@ mongoose
 app.use(express.static(path.join(__dirname, "public")));
 
 // Rotas
+
+// Importações e configurações do servidor
+app.get("/", (req, res) => {
+  // Encontra todas as postagens no banco de dados
+  Postagem.find()
+    .lean()
+    .populate("categoria") // Popula os detalhes da categoria associada a cada postagem
+    .sort({ data: "desc" }) // Ordena as postagens pela data em ordem decrescente
+    .then((postagens) => {
+      // Renderiza o modelo "index" e passa as postagens como variável
+      res.render("index", { postagens: postagens });
+    })
+    .catch((err) => {
+      // Em caso de erro, define uma mensagem de erro e redireciona para a página de erro 404
+      req.flash("error_msg", "Houve um erro interno");
+      res.redirect("/404");
+    });
+});
+
+// Rota para a página de erro 404
+app.get("/404", (req, res) => {
+  res.send("Erro 404 / Not Found");
+});
+
+// Rota para visualizar uma postagem específica
+app.get("/postagem/:id", (req, res) => {
+  const { id } = req.params;
+
+  // Encontra a postagem pelo ID
+  Postagem.findOne({ _id: id })
+    .lean()
+    .then((postagem) => {
+      if (postagem) {
+        // Se a postagem existe, renderiza o modelo "postagem/index" com os detalhes da postagem
+        res.render("postagem/index", { postagem: postagem });
+      } else {
+        // Caso a postagem não exista, define uma mensagem de erro e redireciona para a página inicial
+        req.flash("error_msg", "Esta postagem não existe!");
+        res.redirect("/");
+      }
+    })
+    .catch((err) => {
+      // Em caso de erro, define uma mensagem de erro e redireciona para a página inicial
+      req.flash("error_msg", "Houve um erro interno");
+      res.redirect("/");
+    });
+});
+
+// Rota para listar todas as categorias
+app.get("/categorias", (req, res) => {
+  // Encontra todas as categorias no banco de dados
+  Categoria.find()
+    .lean()
+    .then((categorias) => {
+      // Renderiza o modelo "categorias/index" e passa as categorias como variável
+      res.render("categorias/index", { categorias: categorias });
+    })
+    .catch((err) => {
+      // Em caso de erro, define uma mensagem de erro e redireciona para a página inicial
+      req.flash("error_msg", "Houve um erro interno ao listar as categorias!");
+      res.redirect("/");
+    });
+});
+
+// Rota para visualizar postagens de uma categoria específica
+app.get("/categorias/:slug", (req, res) => {
+  const { slug } = req.params;
+
+  // Encontra a categoria pelo slug
+  Categoria.findOne({ slug: slug })
+    .lean()
+    .then((categoria) => {
+      if (categoria) {
+        // Se a categoria existe, encontra as postagens associadas a ela e renderiza o modelo "categorias/postagens"
+        Postagem.find({ categoria: categoria._id })
+          .lean()
+          .then((postagens) => {
+            res.render("categorias/postagens", {
+              postagens: postagens,
+              categoria: categoria,
+            });
+          })
+          .catch((err) => {
+            // Em caso de erro, define uma mensagem de erro e redireciona para a página inicial
+            req.flash("error_msg", "Houve um erro ao listar os posts!");
+            res.redirect("/");
+          });
+      } else {
+        // Caso a categoria não exista, define uma mensagem de erro e redireciona para a página inicial
+        req.flash("error_msg", "Esta categoria não existe!");
+        res.redirect("/");
+      }
+    })
+    .catch((err) => {
+      // Em caso de erro, define uma mensagem de erro e redireciona para a página inicial
+      req.flash(
+        "error_msg",
+        "Houve um erro interno ao carregar a página desta categoria"
+      );
+      res.redirect("/");
+    });
+});
+
 app.use("/admin", admin); // Definindo um prefixo para o grupo de rotas do arquivo admin.js
 
 // Outros

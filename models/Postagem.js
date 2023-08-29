@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const getTime = require("../utilities/getTime");
 
 const Schema = mongoose.Schema;
 

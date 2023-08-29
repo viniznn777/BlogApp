@@ -11,10 +11,6 @@ router.get("/", (req, res) => {
   res.render("admin/index");
 });
 
-router.get("/posts", (req, res) => {
-  res.send("Página de posts");
-});
-
 // Rota em que é renderizada as categorias
 router.get("/categorias", (req, res) => {
   Categoria.find() // Função para listar todas as categorias registradas no Bando de Dados
