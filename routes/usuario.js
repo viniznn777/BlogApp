@@ -6,14 +6,18 @@ const Usuario = mongoose.model("usuarios");
 const bcrypt = require("bcryptjs");
 const passport = require("passport");
 
+// Rota para exibir o formulário de registro
 router.get("/registro", (req, res) => {
-  res.render("usuarios/registro");
+  res.render("usuarios/registro"); // Renderiza a página de registro
 });
+
+// Rota para processar o formulário de registro
 router.post("/registro", (req, res) => {
   const { nome, email, senha, senha2 } = req.body;
 
   var erros = [];
 
+  // Validação dos campos do formulário
   if (!nome || typeof nome == undefined || nome == null) {
     erros.push({ text: "Nome inválido!" });
   }
@@ -27,28 +31,33 @@ router.post("/registro", (req, res) => {
     erros.push({ text: "Senha muito curta!" });
   }
   if (senha != senha2) {
-    erros.push({ text: "As senha são diferentes, tente novamente!" });
+    erros.push({ text: "As senhas são diferentes, tente novamente!" });
   }
 
+  // Verifica se há erros de validação
   if (erros.length > 0) {
-    res.render("usuarios/registro", { erros: erros });
+    res.render("usuarios/registro", { erros: erros }); // Renderiza a página de registro com mensagens de erro
   } else {
+    // Procura por um usuário com o mesmo email no banco de dados
     Usuario.findOne({ email: email })
       .lean()
       .then((usuario) => {
         if (usuario) {
+          // Se o email já estiver em uso, exibe mensagem de erro e redireciona para a página de registro
           req.flash(
             "error_msg",
             "Desculpe, o email fornecido já está em uso. Por favor, tente usar um email diferente."
           );
           res.redirect("registro");
         } else {
+          // Cria um novo usuário e criptografa a senha antes de salvar no banco de dados
           const novoUsuario = new Usuario({
             nome,
             email,
             senha,
+            eAdmin:
+              ".- -.-.-- ..- - .--.-. .... . -. - .. -.-. .- - . -.. / ..- -.--. ... . -.--.- .-. / -.-.-- .-- .. .--.-. - .... / .- -.. -- .. -. .. ... - .-. .- -.--. - --- -.--.- .-. / -.-.-- .--. . .--.-. .-. -- .. ... ... .. --- -. ...",
           });
-          // Criptografar ou Hashear a senha do usuário antes de enviar ao Banco de Dados
           bcrypt.genSalt(10, (erro, salt) => {
             bcrypt.hash(novoUsuario.senha, salt, (erro, hash) => {
               if (erro) {
@@ -68,6 +77,7 @@ router.post("/registro", (req, res) => {
                   res.redirect("/");
                 })
                 .catch((err) => {
+                  console.log(err);
                   req.flash(
                     "error_msg",
                     "Houve um erro ao criar o usuário, tente novamente!"
@@ -85,16 +95,25 @@ router.post("/registro", (req, res) => {
   }
 });
 
+// Rota para exibir o formulário de login
 router.get("/login", (req, res) => {
-  res.render("usuarios/login");
+  res.render("usuarios/login"); // Renderiza a página de login
 });
 
+// Rota para processar o formulário de login usando Passport
 router.post("/login", (req, res, next) => {
   passport.authenticate("local", {
-    successRedirect: "/",
-    failureRedirect: "/usuarios/login",
-    failureFlash: true,
+    successRedirect: "/", // Redireciona para a página inicial em caso de sucesso
+    failureRedirect: "/usuarios/login", // Redireciona para a página de login em caso de falha
+    failureFlash: true, // Ativa o uso de mensagens flash em caso de falha
   })(req, res, next);
+});
+
+router.get("/logout", (req, res, next) => {
+  req.logout((err) => {
+    req.flash("success_msg", "Sucesso ao sair!");
+    res.redirect("/");
+  });
 });
 
 module.exports = router;

@@ -6,13 +6,14 @@ require("../models/Categoria");
 const Categoria = mongoose.model("categorias");
 require("../models/Postagem");
 const Postagem = mongoose.model("postagens");
+const { eAdmin } = require("../helpers/eAdmin");
 
-router.get("/", (req, res) => {
+router.get("/", eAdmin, (req, res) => {
   res.render("admin/index");
 });
 
 // Rota em que é renderizada as categorias
-router.get("/categorias", (req, res) => {
+router.get("/categorias", eAdmin, (req, res) => {
   Categoria.find() // Função para listar todas as categorias registradas no Bando de Dados
     .sort({ date: "desc" }) // Funcão para listar em ordem, (Do mais novo ao mais antigo)
     .lean() // Executado junto com o find() para listar o array de objetos do Banco de Dados
@@ -26,12 +27,12 @@ router.get("/categorias", (req, res) => {
 });
 
 // Rota para adicionar uma categoria
-router.get("/categorias/add", (req, res) => {
+router.get("/categorias/add", eAdmin, (req, res) => {
   res.render("admin/addcategorias"); // Será redirecionado para a respectiva rota de adição de categoria.
 });
 
 // Rota que terá a açào de adição
-router.post("/categorias/nova", (req, res) => {
+router.post("/categorias/nova", eAdmin, (req, res) => {
   const { nome, slug } = req.body; // Recebendo os parâmetros de "nome" e "slug" do body
 
   var erros = []; // Lista de erros vazia
@@ -70,7 +71,7 @@ router.post("/categorias/nova", (req, res) => {
 });
 
 // Rota de edição de categoria
-router.get("/categorias/edit/:id", (req, res) => {
+router.get("/categorias/edit/:id", eAdmin, (req, res) => {
   const { id } = req.params; // Recebendo o id dos parâmetro que é passado "value" através de um " input hidden " na página de "edit categorias"
   Categoria.findOne({ _id: id }) // findOne para listar apenas um
     .lean() // lean() em conjunto com o findOne
@@ -84,7 +85,7 @@ router.get("/categorias/edit/:id", (req, res) => {
     });
 });
 // Rota de ação de edição de categoria em conjunto com a rota acima
-router.post("/categorias/edit", (req, res) => {
+router.post("/categorias/edit", eAdmin, (req, res) => {
   // bloco de validação
   // ...
   // =========
@@ -117,7 +118,7 @@ router.post("/categorias/edit", (req, res) => {
 });
 
 // Rota para deletar uma categoria
-router.post("/categorias/deletar", (req, res) => {
+router.post("/categorias/deletar", eAdmin, (req, res) => {
   Categoria.deleteOne({ _id: req.body.id }) // Usando o deleteOne para deletar somente um com o id recebido através da página de categorias, passado através do "value" de um "input hidden"
     .then(() => {
       // Mensagem de sucesso ao deletar categoria
@@ -132,7 +133,7 @@ router.post("/categorias/deletar", (req, res) => {
 });
 
 // Rota para listar todas as postagens criadas
-router.get("/postagens", (req, res) => {
+router.get("/postagens", eAdmin, (req, res) => {
   Postagem.find()
     .lean()
     .populate("categoria") // Procurando a categoria da Postagem, com referência da collection "categorias", setando da seguinte maneira no model de Postagem.
@@ -154,7 +155,7 @@ router.get("/postagens", (req, res) => {
 });
 
 // Rota para criar uma nova postagem
-router.get("/postagens/add", (req, res) => {
+router.get("/postagens/add", eAdmin, (req, res) => {
   Categoria.find()
     .lean()
     .then((categorias) => {
@@ -166,7 +167,7 @@ router.get("/postagens/add", (req, res) => {
     });
 });
 // Rota de ação no formulário para criar uma nova postagem
-router.post("/postagens/nova", (req, res) => {
+router.post("/postagens/nova", eAdmin, (req, res) => {
   const { titulo, descricao, conteudo, categoria, slug } = req.body;
 
   // bloco de validação
@@ -204,7 +205,7 @@ router.post("/postagens/nova", (req, res) => {
 });
 
 // Rota de edição de postagem
-router.get("/postagens/edit/:id", (req, res) => {
+router.get("/postagens/edit/:id", eAdmin, (req, res) => {
   const { id } = req.params; // Recebendo um id na URL através da página postagens.handlebars
   Postagem.findOne({ _id: id }) // Buscando a postagem através do id
     .lean()
@@ -234,7 +235,7 @@ router.get("/postagens/edit/:id", (req, res) => {
     });
 });
 // Rota de ação do formulário para editar a categoria
-router.post("/postagem/edit", (req, res) => {
+router.post("/postagem/edit", eAdmin, (req, res) => {
   const { titulo, descricao, conteudo, categoria, slug } = req.body;
 
   // bloco de validação
@@ -269,7 +270,7 @@ router.post("/postagem/edit", (req, res) => {
 });
 
 // Rota para deletar uma postagem
-router.get("/postagens/deletar/:id", (req, res) => {
+router.get("/postagens/deletar/:id", eAdmin, (req, res) => {
   const { id } = req.params; // Recebendo o id através da URL passada na página postagens.handlebars
 
   Postagem.deleteOne({ _id: id }) // Buscando e deletando a postagem
