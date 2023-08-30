@@ -55,8 +55,6 @@ router.post("/registro", (req, res) => {
             nome,
             email,
             senha,
-            eAdmin:
-              ".- -.-.-- ..- - .--.-. .... . -. - .. -.-. .- - . -.. / ..- -.--. ... . -.--.- .-. / -.-.-- .-- .. .--.-. - .... / .- -.. -- .. -. .. ... - .-. .- -.--. - --- -.--.- .-. / -.-.-- .--. . .--.-. .-. -- .. ... ... .. --- -. ...",
           });
           bcrypt.genSalt(10, (erro, salt) => {
             bcrypt.hash(novoUsuario.senha, salt, (erro, hash) => {

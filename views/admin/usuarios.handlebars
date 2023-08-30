@@ -1,0 +1,26 @@
+<h2>Usuários cadastrados: </h2>
+<hr />
+
+{{#each usuarios}}
+  <div class="card mt-4 border border-primary">
+    <div class="card-body">
+      <h5 class="fw-bold">Nome: <span class="fw-normal">{{nome}}</span></h5>
+      <p class="fw-bold">Email: <span class="fw-normal">{{email}}</span></p>
+      {{#if eAdmin}}
+        <p class="fw-bold">Administrador:
+          <span class="text-success fw-bold">True</span></p>
+      {{else}}
+        <p class="fw-bold">Administrador:
+          <span class="text-danger fw-bold">False</span></p>
+      {{/if}}
+      <p class="fw-bold">Hash: <span class="fw-normal">{{senha}}</span></p>
+      <form action="/admin/usuarios/deletar/{{_id}}" method="post">
+        <input type="hidden" name="id" value="{{_id}}" />
+        <button type="submit" class="btn btn-danger mt-2">Deletar Usuário</button>
+      </form>
+    </div>
+  </div>
+
+{{else}}
+  <h3 class="mt-3">Nenhum usuário cadastrado!</h3>
+{{/each}}

@@ -6,6 +6,8 @@ require("../models/Categoria");
 const Categoria = mongoose.model("categorias");
 require("../models/Postagem");
 const Postagem = mongoose.model("postagens");
+require("../models/Usuario");
+const Usuario = mongoose.model("usuarios");
 const { eAdmin } = require("../helpers/eAdmin");
 
 router.get("/", eAdmin, (req, res) => {
@@ -281,6 +283,34 @@ router.get("/postagens/deletar/:id", eAdmin, (req, res) => {
     .catch((err) => {
       req.flash("error_msg", "Houve um erro interno");
       res.redirect("/admin/postagens");
+    });
+});
+
+// Rota para ter acesso aos usuários registrados
+router.get("/usuarios", eAdmin, (req, res) => {
+  Usuario.find()
+    .lean()
+    .then((usuarios) => {
+      res.render("admin/usuarios", { usuarios: usuarios });
+    })
+    .catch((err) => {
+      req.flash("error_msg", "Houve um erro ao listar os usuários");
+      res.redirect("/admin");
+    });
+});
+
+// Rota de ação para deletar usuários registrados
+router.post("/usuarios/deletar/:id", (req, res) => {
+  const id = req.body;
+
+  Usuario.deleteOne({ _id: id })
+    .lean()
+    .then((usuario) => {
+      req.flash("success_msg", "Usuário deletado com sucesso!");
+      res.redirect("/admin/usuarios");
+    })
+    .catch((err) => {
+      req.flash("error_msg", "Houve um erro ao deletar o usuário!");
     });
 });
 
